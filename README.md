@@ -1,9 +1,7 @@
-## Deploy
-* [render](https://render.com/)
-* Google cloud (90 days)
+## Поднятие бд
+`CREATE USER blog_backend WITH PASSWORD 'xxxxxx';`
+`CREATE DATABASE blog_backend OWNER blog;`
 
-## TODO:
-(auth)
-1. Автовход после регистрации
-2. Мгновенная автопроверка после ввода пользователем поля
-3. Регистрация через сторонние сервисы (vk, google, yandex)
+## TODO
+1. Поднять бд PostgreSQL
+2. Сделать поиск

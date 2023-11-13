@@ -10,8 +10,8 @@ class LoginForm(forms.Form):
 
 
 class UserRegistrationForm(forms.ModelForm):
-    password = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Repeat password', widget=forms.PasswordInput)
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Повтор пароля', widget=forms.PasswordInput)
 
     class Meta:
         model = User
@@ -20,7 +20,7 @@ class UserRegistrationForm(forms.ModelForm):
     def clean_password2(self):
         cd = self.cleaned_data
         if cd['password'] != cd['password2']:
-            raise forms.ValidationError("Passwords don't match")
+            raise forms.ValidationError("Пароли не совпадают")
         return cd['password2']
 
     def clean_email(self):
@@ -32,7 +32,7 @@ class UserRegistrationForm(forms.ModelForm):
     def check_unique(self, field: str):
         data = self.cleaned_data[field]
         if User.objects.filter(**{field: data}).exists():
-            raise forms.ValidationError(f'{field.capitalize()} already in use.')
+            raise forms.ValidationError(f'{field.capitalize()} уже занят.')
         return data
 
 

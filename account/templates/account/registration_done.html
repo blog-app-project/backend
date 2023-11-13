@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}Добро пожаловать{% endblock %}
 
 {% block content %}
-	<h1>Welcome {{ new_user.first_name }}!</h1>
+	<h1>Добро пожаловать, {{ new_user.first_name }}!</h1>
     <p>
-        Your account has been succesfully created.
-        Now you can <a href="{% url "login" %}">log in</a>
+        Ваш аккаунт создан.
+        <a href="{% url "login" %}">Войдите в него</a>
     </p>
 {% endblock %}

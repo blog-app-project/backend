@@ -7,9 +7,7 @@ from account.models import Profile
 
 
 # Create your views here.
-@login_required  # Если не аутентифицирован - перенаправление на URL адрес входа с next=этот url
-def dashboard(request):
-    return render(request, 'account/dashboard.html', {'section': 'dashboard'})
+
 
 
 def register(request):
