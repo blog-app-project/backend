@@ -1,14 +1,14 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.core.mail import send_mail
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
-from django.http import Http404
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from django.views.generic import ListView
 from taggit.models import Tag
 
-from blog_app.forms import EmailPostForm, CommentForm, SearchForm
+from blog_app.forms import EmailPostForm, CommentForm, SearchForm, CreatePostForm
 from blog_app.models import Post
 
 
@@ -109,7 +109,8 @@ def post_search(request):
                    'results': results})
 
 
-@require_POST  # Иначе 405 - метод не разрешен
+@require_POST
+@login_required
 def post_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
     comment = None  # Хранение комментарного объекта при создании
@@ -124,3 +125,19 @@ def post_comment(request, post_id):
     return render(request, 'blog_app/post/comment.html', {'post': post,
                                                           'form': form,
                                                           'comment': comment})
+
+
+@login_required
+def post_create(request):
+    if request.method == 'POST':
+        form = CreatePostForm(data=request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            new_post = form.save(commit=False)
+            new_post.author = request.user
+            new_post.save()
+            messages.success(request, 'Пост сохранен как черновик')
+            return redirect(request.user.profile.get_absolute_url())
+    else:
+        form = CreatePostForm(data=request.GET)
+    return render(request, 'blog_app/post/create.html', {'form': form})

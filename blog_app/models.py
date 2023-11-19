@@ -44,7 +44,7 @@ class Post(models.Model):
     users_like = models.ManyToManyField(get_user_model(), related_name='posts_liked', blank=True)
     total_likes = models.PositiveIntegerField(default=0)
 
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     # Хранение в обратном хронологическом порядке
     class Meta:

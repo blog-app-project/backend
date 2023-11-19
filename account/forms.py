@@ -36,11 +36,10 @@ class UserRegistrationForm(forms.ModelForm):
         return data
 
 
-
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email')
+        fields = ('email',)
 
     def clean_email(self):
         return self.check_unique('email')
@@ -59,4 +58,4 @@ class UserEditForm(forms.ModelForm):
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ('date_of_birth', 'photo')
+        fields = ('blog_name', 'date_of_birth', 'photo')

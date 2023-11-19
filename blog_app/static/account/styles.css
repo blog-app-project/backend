@@ -275,3 +275,10 @@ img.user-detail {
     font-style:italic;
     color:#ccc;
 }
+
+.circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 90px;
+    background: #777;
+}
