@@ -29,7 +29,7 @@ class Post(models.Model):
 
     author = models.ForeignKey(get_user_model(),
                                on_delete=models.CASCADE,
-                               related_name='posts_created'
+                               related_name='posts'
                                )
 
     body = models.TextField()

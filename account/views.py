@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -7,6 +8,7 @@ from django.views.decorators.http import require_POST
 
 from account.forms import UserEditForm, ProfileEditForm, UserRegistrationForm
 from account.models import Profile, Contact
+from blog_app.models import Post
 
 
 # Create your views here.
@@ -48,11 +50,16 @@ def edit(request):
 
 
 def user_detail(request, username):
-    user = get_object_or_404(User, username=username, is_active=True)
+    user = get_object_or_404(get_user_model(), username=username, is_active=True)
+    posts = user.posts.all()
+
+    if request.user.id != user.id:
+        posts = posts.filter(status=Post.Status.PUBLISHED)
+
     return render(request,
                   'profile/detail.html',
-                  {'section': 'people',
-                   'user': user})
+                  {'user': user,
+                   'posts': posts,})
 
 
 @require_POST
