@@ -19,6 +19,7 @@ class PublishedManager(models.Manager):
 class Post(models.Model):
     class Status(models.TextChoices):
         DRAFT = 'DF', 'Draft'
+        MODERATED = 'MD', 'Moderated'
         PUBLISHED = 'PB', 'Published'
 
     title = models.CharField(max_length=250)
@@ -66,15 +67,16 @@ class Post(models.Model):
 
     # Канонический адрес для модели
     def get_absolute_url(self):
-        return reverse('blog_app:post_detail', args=(self.publish.year,
-                                                     self.publish.month,
-                                                     self.publish.day,
-                                                     self.slug,))
+        return reverse('blog_app:post_detail', args=(
+            self.publish.year,
+            self.publish.month,
+            self.publish.day,
+            self.slug,))
 
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey(get_user_model(), related_name='comments_created', on_delete=models.CASCADE)
+    author = models.ForeignKey(get_user_model(), related_name='comments_created', on_delete=models.CASCADE)
 
     total_likes = models.PositiveIntegerField(default=0)
 
@@ -90,4 +92,4 @@ class Comment(models.Model):
         ]
 
     def __str__(self):
-        return f'Comment by {self.user.first_name} {self.user.last_name} on {self.post}'
+        return f'Comment by {self.author.profile.blog_name} on {self.post}'

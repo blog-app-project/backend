@@ -11,7 +11,7 @@ def generate_posts():
     for _ in range(20):
         title = fake.text(30)
         status = random.choice(Post.Status.values)
-        Post.objects.create(title=title, slug=fake.slug(title), author_id=1, body=fake.text(1000), status=status)
+        Post.objects.create(title=title, slug=fake.slug(title), author_id=2, body=fake.text(1000), status=status)
 
 
 def generate_tags_for_existing_posts():

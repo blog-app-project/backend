@@ -8,4 +8,5 @@
         {% csrf_token %}
         <input type="submit" value="Сохранить"/>
     </form>
+    <a class="button" href="{{user.profile.get_absolute_url}}">Отмена</a>
 {% endblock %}

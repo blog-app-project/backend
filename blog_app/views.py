@@ -12,14 +12,6 @@ from blog_app.forms import EmailPostForm, CommentForm, SearchForm, CreatePostFor
 from blog_app.models import Post
 
 
-# Create your views here.
-# class PostListView(ListView):
-#     queryset = Post.published.all()  # model = Post # использует Post.objects.all()
-#     context_object_name = 'posts'
-#     paginate_by = 3
-#     template_name = 'blog_app/post/list.html'
-
-
 def post_list(request, tag_slug=None):
     post_list = Post.published.all()
     tag = None
@@ -35,9 +27,6 @@ def post_list(request, tag_slug=None):
     except PageNotAnInteger:
         posts = paginator.page(1)
     return render(request, 'blog_app/post/list.html', {'posts': posts, 'tag': tag})
-
-
-# функция сокращеного доступа - охватывает сразу несколько слоев MVC,
 
 
 def post_detail(request, year, month, day, post):
@@ -120,6 +109,7 @@ def post_comment(request, post_id):
         comment = form.save(commit=False)  # Экземпляр модели создается, но не сохраняется в бд
         # метод доступен только в ModelForm
         comment.post = post
+        comment.author = request.user
         comment.save()
 
     return render(request, 'blog_app/post/comment.html', {'post': post,
@@ -140,4 +130,4 @@ def post_create(request):
             return redirect(request.user.profile.get_absolute_url())
     else:
         form = CreatePostForm(data=request.GET)
-    return render(request, 'blog_app/post/create.html', {'form': form})
+    return render(request, 'blog_app/post/create.html', {'form': form, 'user': request.user})

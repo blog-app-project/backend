@@ -12,7 +12,6 @@ from account.models import Profile, Contact
 # Create your views here.
 
 
-
 def register(request):
     if request.method == 'POST':
         user_form = UserRegistrationForm(request.POST)
@@ -54,6 +53,7 @@ def user_detail(request, username):
                   'profile/detail.html',
                   {'section': 'people',
                    'user': user})
+
 
 @require_POST
 @login_required
