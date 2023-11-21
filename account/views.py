@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from account.forms import UserEditForm, ProfileEditForm, UserRegistrationForm
 from account.models import Profile, Contact
 from blog_app.models import Post
+from blog_app.utils.paginator import create_paginator
 
 
 # Create your views here.
@@ -56,6 +57,7 @@ def user_detail(request, username):
     if request.user.id != user.id:
         posts = posts.filter(status=Post.Status.PUBLISHED)
 
+    posts = create_paginator(posts, request)
     return render(request,
                   'profile/detail.html',
                   {'user': user,

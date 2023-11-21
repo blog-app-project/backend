@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Изменить пост{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <input type="submit" value="Сохранить"/>
+    </form>
+    <a class="button" href="{{ user.profile.get_absolute_url }}">Выложить</a>
+    <a class="button" href="{{ user.profile.get_absolute_url }}">Вернуться</a>
+    <a class="delete-button" href="{{ user.profile.get_absolute_url }}">Удалить</a>
+{% endblock %}

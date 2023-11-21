@@ -2,14 +2,16 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.core.mail import send_mail
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
+from django.forms import model_to_dict
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from taggit.models import Tag
 
 from blog_app.forms import EmailPostForm, CommentForm, SearchForm, CreatePostForm
 from blog_app.models import Post
+from blog_app.utils.paginator import create_paginator
 
 
 def post_list(request, tag_slug=None):
@@ -18,31 +20,27 @@ def post_list(request, tag_slug=None):
     if tag_slug:
         tag = get_object_or_404(Tag, slug=tag_slug)
         post_list = post_list.filter(tags__in=[tag])  # Связь многие-ко-многим - используем in
-    paginator = Paginator(post_list, 3)
-    page_number = request.GET.get('page', 1)
-    try:
-        posts = paginator.page(page_number)
-    except EmptyPage:
-        posts = paginator.page(paginator.num_pages)
-    except PageNotAnInteger:
-        posts = paginator.page(1)
+    posts = create_paginator(post_list, request)
     return render(request, 'blog_app/post/list.html', {'posts': posts, 'tag': tag})
 
 
 def post_detail(request, year, month, day, post):
     post = get_object_or_404(Post,
-                             status=Post.Status.PUBLISHED,
                              slug=post,
                              publish__year=year,
                              publish__month=month,
                              publish__day=day)
 
+    if post.author.id != request.user.id:
+        raise Http404()
+
     post_tags_id = post.tags.values_list('id', flat=True)
+
     # получаем не одноэлементные кортежи [(1, ), (2, ), ...], а одиночные значения [1, 2, 3, ...]
     similar_posts = Post.objects.filter(tags__in=post_tags_id).exclude(id=post.id)
 
-    # how and why it works?
-    similar_posts = similar_posts.annotate(same_tags=Count('tags')) \
+    similar_posts = similar_posts \
+                        .annotate(same_tags=Count('tags')) \
                         .order_by('-same_tags', '-publish')[:4]
 
     comments = post.comments.filter(active=True)
@@ -131,3 +129,30 @@ def post_create(request):
     else:
         form = CreatePostForm(data=request.GET)
     return render(request, 'blog_app/post/create.html', {'form': form, 'user': request.user})
+
+
+@login_required
+def post_delete(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if post.author.id != request.user.id:
+        raise Http404()
+    post.delete()
+    messages.success(request, 'Пост удален!')
+    return redirect(request.user.profile.get_absolute_url())
+
+
+@login_required
+def post_edit(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if post.author.id != request.user.id:
+        raise Http404()
+
+    if request.method == 'POST':
+        form = CreatePostForm(data=request.POST, instance=post)
+        if form.is_valid():
+            cd = form.cleaned_data
+            form.save()
+            messages.success(request, 'Пост сохранен')
+    else:
+        form = CreatePostForm(data=model_to_dict(post))
+    return render(request, 'blog_app/post/edit.html', {'form': form, 'user': request.user})

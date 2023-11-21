@@ -4,5 +4,5 @@
 {% block title %}Блоги{% endblock %}
 
 {% block content %}
-    {% include 'blog_app/post/includes/post_list.html' with posts=posts tags=tags %}
+    {% include 'blog_app/post/includes/post_list.html' with posts=posts tags=tags personal=False %}
 {% endblock %}

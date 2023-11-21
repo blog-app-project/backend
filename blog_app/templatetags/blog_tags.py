@@ -30,3 +30,8 @@ def get_most_commented_posts(count=5):
 @register.filter(name='markdown')
 def markdown_format(text):
     return mark_safe(markdown.markdown(text))  # по умолчанию Django не доверяет разметке и экранирует ее
+
+
+@register.simple_tag
+def show_status(value: str):
+    return Post.Status(value).label

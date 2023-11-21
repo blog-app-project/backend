@@ -41,7 +41,11 @@
         </a>
     {% endif %}
     <div id="image-list" class="image-container">
-        {% include 'blog_app/post/includes/post_list.html' with posts=posts tags=tags %}
+        {% if request.user.id == user.id %}
+            {% include 'blog_app/post/includes/post_list.html' with posts=posts tags=tags personal=True %}
+        {% else %}
+            {% include 'blog_app/post/includes/post_list.html' with posts=posts tags=tags personal=False %}
+        {% endif %}
     </div>
 {% endblock %}
 

@@ -13,6 +13,8 @@ urlpatterns = [
     path('search/', views.post_search, name='post_search'),
 
     path('create/', views.post_create, name='create'),
+    path('<int:post_id>/delete/', views.post_delete, name='delete'),
+    path('<int:post_id>/edit/', views.post_edit, name='edit'),
 ]
 
 # slug - строка содержащая только буквы цифры и -, _
