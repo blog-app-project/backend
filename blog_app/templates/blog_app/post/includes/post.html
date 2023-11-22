@@ -10,7 +10,7 @@
         {% show_status post.status %}<br/>
         <a href="{% url "blog_app:edit" post.id %}">Редактировать</a><br/>
         {% if post.status == "DF" %}
-            <a href="{% url "blog_app:edit" post.id %}">Выложить</a><br/>
+            <a href="{% url "blog_app:publish" post.id %}">Выложить</a><br/>
         {% endif %}
         <a href="{% url "blog_app:delete" post.id %}">Удалить</a><br/>
     {% endif %}

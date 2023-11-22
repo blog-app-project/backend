@@ -8,7 +8,10 @@
         {% csrf_token %}
         <input type="submit" value="Сохранить"/>
     </form>
-    <a class="button" href="{{ user.profile.get_absolute_url }}">Выложить</a>
+    {% if post.status == "DF" %}
+        <a class="button" href="{% url "blog_app:publish" post.id %}">Выложить</a>
+    {% endif %}
+
     <a class="button" href="{{ user.profile.get_absolute_url }}">Вернуться</a>
-    <a class="delete-button" href="{{ user.profile.get_absolute_url }}">Удалить</a>
+    <a class="delete-button" href="{% url "blog_app:delete" post.id %}">Удалить</a>
 {% endblock %}

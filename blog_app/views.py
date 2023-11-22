@@ -31,7 +31,7 @@ def post_detail(request, year, month, day, post):
                              publish__month=month,
                              publish__day=day)
 
-    if post.author.id != request.user.id:
+    if post.status != post.Status.PUBLISHED and post.author.id != request.user.id:
         raise Http404()
 
     post_tags_id = post.tags.values_list('id', flat=True)
@@ -151,8 +151,22 @@ def post_edit(request, post_id):
         form = CreatePostForm(data=request.POST, instance=post)
         if form.is_valid():
             cd = form.cleaned_data
-            form.save()
+            new_post = form.save(commit=False)
+            new_post.status = Post.Status.DRAFT
+            new_post.save()
             messages.success(request, 'Пост сохранен')
     else:
         form = CreatePostForm(data=model_to_dict(post))
-    return render(request, 'blog_app/post/edit.html', {'form': form, 'user': request.user})
+    return render(request, 'blog_app/post/edit.html', {'form': form, 'post': post, 'user': request.user})
+
+
+@login_required
+def post_publish(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if post.author.id != request.user.id:
+        raise Http404()
+
+    post.status = post.Status.MODERATED
+    post.save()
+    messages.success(request, 'Пост отправлен на модерацию')
+    return redirect(request.user.profile.get_absolute_url())
