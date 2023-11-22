@@ -4,13 +4,13 @@ from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.core.mail import send_mail
 from django.db.models import Count
 from django.forms import model_to_dict
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from taggit.models import Tag
 
 from blog_app.forms import EmailPostForm, CommentForm, SearchForm, CreatePostForm
-from blog_app.models import Post
+from blog_app.models import Post, RussianTag
 from blog_app.utils.paginator import create_paginator
 
 
@@ -18,10 +18,50 @@ def post_list(request, tag_slug=None):
     post_list = Post.published.all()
     tag = None
     if tag_slug:
-        tag = get_object_or_404(Tag, slug=tag_slug)
+        tag = get_object_or_404(RussianTag, slug=tag_slug)
         post_list = post_list.filter(tags__in=[tag])  # Связь многие-ко-многим - используем in
     posts = create_paginator(post_list, request)
-    return render(request, 'blog_app/post/list.html', {'posts': posts, 'tag': tag})
+    return render(request, 'blog_app/post/list.html', {'posts': posts,
+                                                       'tag': tag,
+                                                       'title': "Посты"})
+
+
+def post_list_latest(request):
+    latest_posts = Post.published.order_by('-publish')
+    posts = create_paginator(latest_posts, request)
+    return render(request, 'blog_app/post/list.html', {'section': 'new',
+                                                       'posts': posts,
+                                                       'tag': [],
+                                                       'title': "Новое"})
+
+
+def post_list_popular(request):
+    latest_posts = Post.published.order_by('-total_likes')
+    posts = create_paginator(latest_posts, request)
+    return render(request, 'blog_app/post/list.html', {'section': 'best',
+                                                       'posts': posts,
+                                                       'tag': [],
+                                                       'title': "Лучшее"})
+
+
+@login_required
+def post_list_from_subs(request):
+    post_list = request.user.posts_liked.all()  # TODO
+    posts = create_paginator(post_list, request)
+    return render(request, 'blog_app/post/list.html', {'section': 'subs',
+                                                       'posts': posts,
+                                                       'tag': [],
+                                                       'title': "Подписки"})
+
+
+@login_required
+def post_list_liked(request):
+    post_list = request.user.posts_liked.all()
+    posts = create_paginator(post_list, request)
+    return render(request, 'blog_app/post/list.html', {'section': 'liked',
+                                                       'posts': posts,
+                                                       'tag': [],
+                                                       'title': "Понравившееся"})
 
 
 def post_detail(request, year, month, day, post):
@@ -73,6 +113,24 @@ def post_share(request, post_id):
     return render(request, 'blog_app/post/share.html', {'post': post,
                                                         'form': form,
                                                         'sent': sent})
+
+
+@login_required
+@require_POST
+def post_like(request):
+    post_id = request.POST.get('id')
+    action = request.POST.get('action')
+    if post_id and action:
+        try:
+            post = Post.objects.get(id=post_id)
+            if action == 'like':
+                post.users_like.add(request.user)
+            else:
+                post.users_like.remove(request.user)  # Если объекта нет - ничего не произойдет
+            return JsonResponse({'status': 'ok'})
+        except Post.DoesNotExist:
+            pass
+    return JsonResponse({'status': 'error'})
 
 
 def post_search(request):

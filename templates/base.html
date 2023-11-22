@@ -16,21 +16,21 @@
 </head>
 <body>
 <div id="header">
-    <a href="/"><span class="logo">Blogs</span></a>
+    <a href="{% url "blog_app:post_list" %}"><span class="logo">Blogs</span></a>
     <ul class="menu">
-        <li {% if section == 'subscriptions' %}class="selected" {% endif %}>
-            <a href="#">Подписки</a>
+        <li {% if section == 'subs' %}class="selected" {% endif %}>
+            <a href="{% url 'blogs:post_list_from_subs' %}">Подписки</a>
         </li>
         <li {% if section == 'new' %}class="selected" {% endif %}>
-            <a href="#">Новое</a>
+            <a href="{% url 'blogs:post_list_latest' %}">Новое</a>
         </li>
         <li {% if section == 'best' %}class="selected" {% endif %}>
-            <a href="#">Лучшее</a>
+            <a href="{% url 'blogs:post_list_popular' %}">Лучшее</a>
     </ul>
     {# TODO: Здесь будет поиск #}
     <span class="user">
         {% if request.user.is_authenticated %}
-            <a href="#" {% if section == 'best' %}class="selected" {% endif %}>♥</a>
+            <a href="{% url "blogs:post_list_liked" %}" {% if section == 'liked' %}class="selected" {% endif %}>♥</a>
             <a href="{% url "user_detail" request.user.username %}">
                 {{ request.user.profile.blog_name }}
             </a>

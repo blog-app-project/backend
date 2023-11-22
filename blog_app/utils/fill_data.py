@@ -4,7 +4,7 @@ from faker import Faker
 
 from blog_app.models import Post
 
-fake = Faker()
+fake = Faker("ru_RU")
 
 
 def generate_posts():

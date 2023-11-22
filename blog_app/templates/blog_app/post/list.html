@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% load blog_tags %}
 
-{% block title %}Блоги{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+    <h1>{{ title }}</h1>
     {% include 'blog_app/post/includes/post_list.html' with posts=posts tags=tags personal=False %}
 {% endblock %}

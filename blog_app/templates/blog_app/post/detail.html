@@ -12,21 +12,41 @@
         <a href="{{ post.author.profile.get_absolute_url }}">{{ post.author.profile.blog_name }}</a>
     </p>
     {{ post.body|markdown }}
+    {% with total_likes=post.users_like.count users_like=post.users_like.all %}
+        <span class="count">
+            <span class="total">{{ total_likes }}</span>
+            {% if total_likes == 1 %}
+                Лайк
+            {% elif 2 <= total_follower and total_follower <= 4 %}
+                Лайка
+            {% else %}
+                Лайков
+            {% endif %}
+        </span>
+        <a href="#" data-id="{{ post.id }}"
+           data-action="{% if request.user in users_like %}un{% endif %}like" class="like button">
+            {% if request.user not in users_like %}
+                Поставить лайк
+            {% else %}
+                Убрать лайк
+            {% endif %}
+        </a>
+    {% endwith %}
     <p>
         <a href="{% url "blog_app:post_share" post.id %}">Поделится постом</a>
     </p>
     <h2>Похожие посты</h2>
     {% for post in similar_posts %}
-    	<p>
+        <p>
             <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
         </p>
-    {%  empty %}
+    {% empty %}
         Похожих постов не найдено
     {% endfor %}
-    
+
     {% with comments.count as total_comments %}
-    	<h2>
-        {{ total_comments }}
+        <h2>
+            {{ total_comments }}
             {% if total_comments == 1 %}
                 Комментарий
             {% elif 2 <= total_follower and total_follower <= 4 %}
@@ -37,16 +57,49 @@
         </h2>
     {% endwith %}
     {% for comment in comments %}
-    	<div class="comment">
+        <div class="comment">
             <p class="info">
                 Комментарий {{ forloop.counter }} от
                 <a href="{{ comment.author.profile.get_absolute_url }}">{{ comment.author.profile.blog_name }}</a>
                 {{ comment.created }}
             </p>
-        {{ comment.body|linebreaks }}
+            {{ comment.body|linebreaks }}
         </div>
     {% empty %}
         <p>Нет комментариев.</p>
     {% endfor %}
     {% include 'blog_app/post/includes/comment_form.html' %}
+{% endblock %}
+
+{% block domready %}
+    const url = '{% url "blog_app:like" %}';
+    var options = {
+    method: 'POST',
+    headers: {'X-CSRFToken': csrftoken},
+    mode: 'same-origin'
+    };
+    document.querySelector('a.like')
+    .addEventListener('click', function(e) {
+    e.preventDefault();
+    var likeButton = this;
+    var formData = new FormData();
+    formData.append('id', likeButton.dataset.id);
+    formData.append('action', likeButton.dataset.action);
+    options['body'] = formData;
+    fetch(url, options)
+    .then(response => response.json())
+    .then(data => {
+    if (data['status'] === 'ok')
+    {
+    var previousAction = likeButton.dataset.action;
+    var action = previousAction === 'like' ? 'unlike' : 'like';
+    likeButton.dataset.action = action;
+    var translate = {'like': 'Поставить лайк', 'unlike': 'Убрать лайк'}
+    likeButton.innerHTML = translate[action];
+    var likeCount = document.querySelector('span.count .total');
+    var totalLikes = parseInt(likeCount.innerHTML);
+    likeCount.innerHTML = previousAction === 'like' ? totalLikes + 1 : totalLikes - 1;
+    }
+    });
+    });
 {% endblock %}

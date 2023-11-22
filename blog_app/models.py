@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from pytils.translit import slugify
 from taggit.managers import TaggableManager
+from taggit.models import TagBase, GenericTaggedItemBase
 
 from account.models import Profile
 
@@ -13,6 +14,22 @@ from account.models import Profile
 class PublishedManager(models.Manager):
     def get_queryset(self):  # Набор queryset, который будет исполнен
         return super().get_queryset().filter(status=Post.Status.PUBLISHED)
+
+
+class RussianTag(TagBase):
+    def slugify(self, tag, i=None):
+        slug = slugify(tag)
+        if i is not None:
+            slug += "_%d" % i
+        return slug
+
+
+class TaggedWhatever(GenericTaggedItemBase):
+    tag = models.ForeignKey(
+        RussianTag,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s_items",
+    )
 
 
 # Create your models here.
@@ -45,13 +62,14 @@ class Post(models.Model):
     users_like = models.ManyToManyField(get_user_model(), related_name='posts_liked', blank=True)
     total_likes = models.PositiveIntegerField(default=0)
 
-    tags = TaggableManager(blank=True)
+    tags = TaggableManager(blank=True, through=TaggedWhatever)
 
     # Хранение в обратном хронологическом порядке
     class Meta:
         ordering = ['-publish']  # - дефис = убыващий порядок
         indexes = [
-            models.Index(fields=['-publish'])
+            models.Index(fields=['-publish']),
+            models.Index(fields=['-total_likes']),
         ]
 
     objects = models.Manager()  # Менеджер, применяемый по умолчанию
