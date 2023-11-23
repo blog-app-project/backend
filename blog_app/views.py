@@ -46,7 +46,8 @@ def post_list_popular(request):
 
 @login_required
 def post_list_from_subs(request):
-    post_list = request.user.posts_liked.all()  # TODO
+    sub_posts_pks = request.user.following.all().values_list('posts', flat=True)
+    post_list = Post.published.filter(pk__in=sub_posts_pks).order_by('-publish')
     posts = create_paginator(post_list, request)
     return render(request, 'blog_app/post/list.html', {'section': 'subs',
                                                        'posts': posts,
@@ -149,7 +150,8 @@ def post_search(request):
                 rank=SearchRank(search_vector, search_query)
             ).filter(rank__gte=0.3).order_by('-rank')
     return render(request, 'blog_app/post/search.html',
-                  {'form': form,
+                  {'section': 'search',
+                   'form': form,
                    'query': query,
                    'results': results})
 

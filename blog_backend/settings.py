@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'blog_app.apps.BlogAppConfig',
     'taggit',
     'easy_thumbnails',
+    'django.contrib.postgres',
 ]
 
 MIDDLEWARE = [
@@ -81,8 +82,10 @@ WSGI_APPLICATION = 'blog_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'blog_backend',
+        'USER': 'blog_backend',
+        'PASSWORD': 'dnekcab_golb'
     }
 }
 

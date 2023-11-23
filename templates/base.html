@@ -26,8 +26,11 @@
         </li>
         <li {% if section == 'best' %}class="selected" {% endif %}>
             <a href="{% url 'blogs:post_list_popular' %}">Лучшее</a>
+        </li>
+        <li {% if section == 'search' %}class="selected" {% endif %}>
+            <a href="{% url 'blogs:post_search' %}">Поиск</a>
+        </li>
     </ul>
-    {# TODO: Здесь будет поиск #}
     <span class="user">
         {% if request.user.is_authenticated %}
             <a href="{% url "blogs:post_list_liked" %}" {% if section == 'liked' %}class="selected" {% endif %}>♥</a>
