@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="{% static "account/styles.css" %}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <script>
+        const csrftoken = Cookies.get('csrftoken');
+        document.addEventListener('DOMContentLoaded', (event) => {
+            {% block domready %}
+            {% endblock %}
+        });
+    </script>
+</head>
+<body>
+<div id="header">
+    <a href="{% url "blog_app:post_list" %}"><span class="logo">Модерация</span></a>
+    <span class="user">
+        <a href="{% url "user_detail" request.user.username %}">
+            {{ request.user.profile.blog_name|default:request.user.username }}
+        </a>
+        <a href="{% url "logout" %}">Выйти</a>
+    </span>
+</div>
+<div>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">
+                    {{ message|safe }}
+                    <a href="#" class="close">x</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+<div id="content">
+    {% block content %}
+
+    {% endblock %}
+</div>
+
+</body>
+</html>

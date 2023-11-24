@@ -16,6 +16,11 @@ class PublishedManager(models.Manager):
         return super().get_queryset().filter(status=Post.Status.PUBLISHED)
 
 
+class ModeratedManager(models.Manager):
+    def get_queryset(self):  # Набор queryset, который будет исполнен
+        return super().get_queryset().filter(status=Post.Status.MODERATED)
+
+
 class RussianTag(TagBase):
     def slugify(self, tag, i=None):
         slug = slugify(tag)
@@ -41,7 +46,6 @@ class Post(models.Model):
 
     title = models.CharField(max_length=250)
     slug = models.SlugField(max_length=250,
-                            unique_for_date='publish',
                             blank=True)
 
     author = models.ForeignKey(get_user_model(),
@@ -74,6 +78,7 @@ class Post(models.Model):
 
     objects = models.Manager()  # Менеджер, применяемый по умолчанию
     published = PublishedManager()  # Если мы переопределяем менеджер, то дефолтный стирается
+    moderated = ModeratedManager()
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -85,11 +90,7 @@ class Post(models.Model):
 
     # Канонический адрес для модели
     def get_absolute_url(self):
-        return reverse('blog_app:post_detail', args=(
-            self.publish.year,
-            self.publish.month,
-            self.publish.day,
-            self.slug,))
+        return reverse('blog_app:post_detail', args=(self.id,))
 
 
 class Comment(models.Model):
@@ -101,7 +102,9 @@ class Comment(models.Model):
     body = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
     active = models.BooleanField(default=True)  # Деактивация неуместных комментариев
+    moderator = models.BooleanField(default=False)  # Комментарии от модератора
 
     class Meta:
         ordering = ['created']

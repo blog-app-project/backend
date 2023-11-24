@@ -1,0 +1,30 @@
+{% extends 'moderation/base_site.html' %}
+{% load blog_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    {% for post in posts %}
+        <h2>
+            <a href="{% url "blog_app:moderation_post" post.id %}">
+                {{ post.title }}
+            </a>
+        </h2>
+        <div class="info">
+            <p class="date">
+                Создан: {{ post.created }}<br/>
+                Обновлен: {{ post.updated }}<br/>
+                от <a href="{{ post.author.profile.get_absolute_url }}">{{ post.author.profile.blog_name }}</a><br/>
+                --
+            </p>
+        </div>
+        {{ post.body|markdown|truncatewords_html:30 }}
+    {% empty %}
+        Очередь на модерацию пуста!
+    {% endfor %}
+
+    {% if posts %}
+        {% include 'blog_app/pagination.html' with page=posts %}
+    {% endif %}
+{% endblock %}

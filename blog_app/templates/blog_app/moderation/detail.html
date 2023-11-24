@@ -1,0 +1,27 @@
+{% extends 'moderation/base_site.html' %}
+{% load blog_tags %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ post.title }}</h1>
+    <p class="date">
+        Опубликовано {{ post.publish }} от
+        <a href="{{ post.author.profile.get_absolute_url }}">{{ post.author.profile.blog_name }}</a>
+    </p>
+    {{ post.body|markdown }}
+
+    {% for comment in comments %}
+        <div class="comment">
+            <p class="info">
+                Комментарий {{ forloop.counter }} от
+                <a href="{{ comment.author.profile.get_absolute_url }}">{{ comment.author.profile.blog_name }}</a>
+                {{ comment.created }}
+            </p>
+            {{ comment.body|linebreaks }}
+        </div>
+    {% empty %}
+        <p>Нет комментариев.</p>
+    {% endfor %}
+    {% include 'blog_app/post/includes/comment_form.html' %}
+{% endblock %}

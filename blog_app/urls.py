@@ -13,7 +13,7 @@ urlpatterns = [
     path('new/', views.post_list_latest, name='post_list_latest'),
     path('best/', views.post_list_popular, name='post_list_popular'),
 
-    path('<int:year>/<int:month>/<int:day>/<slug:post>/', views.post_detail, name='post_detail'),
+    path('<int:post_id>/', views.post_detail, name='post_detail'),
     path('<int:post_id>/share/', views.post_share, name='post_share'),
     path('<int:post_id>/comment/', views.post_comment, name='post_comment'),
     path('like/', views.post_like, name='like'),
@@ -22,6 +22,10 @@ urlpatterns = [
     path('<int:post_id>/delete/', views.post_delete, name='delete'),
     path('<int:post_id>/edit/', views.post_edit, name='edit'),
     path('<int:post_id>/publish/', views.post_publish, name='publish'),
+
+    path('moderation/', views.moderation_post_list, name='moderation'),
+    path('moderation/<int:post_id>/', views.moderation_post_detail, name='moderation_post'),
+    path('moderation/<int:post_id>/comment', views.moderation_post_comment, name='moderation_post_comment'),
 ]
 
 # slug - строка содержащая только буквы цифры и -, _

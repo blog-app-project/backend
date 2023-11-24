@@ -2,12 +2,14 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from account.forms import UserEditForm, ProfileEditForm, UserRegistrationForm
 from account.models import Profile, Contact
+from account.utils.decorators import staff_not_allowed
+from account.utils.moderate import moderator_group_name
 from blog_app.models import Post
 from blog_app.utils.paginator import create_paginator
 
@@ -32,10 +34,12 @@ def register(request):
 
 
 @login_required
+@staff_not_allowed
 def edit(request):
+    user_profile = request.user.profile
     if request.method == 'POST':
         user_form = UserEditForm(instance=request.user, data=request.POST)
-        profile_form = ProfileEditForm(instance=request.user.profile, data=request.POST, files=request.FILES)
+        profile_form = ProfileEditForm(instance=user_profile, data=request.POST, files=request.FILES)
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
@@ -45,7 +49,7 @@ def edit(request):
 
     else:
         user_form = UserEditForm(instance=request.user)
-        profile_form = ProfileEditForm(instance=request.user.profile)
+        profile_form = ProfileEditForm(instance=user_profile)
 
     return render(request, 'account/edit.html', {'user_form': user_form, 'profile_form': profile_form})
 
@@ -53,15 +57,20 @@ def edit(request):
 def user_detail(request, username):
     user = get_object_or_404(get_user_model(), username=username, is_active=True)
     posts = user.posts.all()
+    is_moderator = False
 
     if request.user.id != user.id:
         posts = posts.filter(status=Post.Status.PUBLISHED)
+    elif request.user.groups.filter(name=moderator_group_name).exists():
+        is_moderator = True
+
 
     posts = create_paginator(posts, request)
     return render(request,
                   'profile/detail.html',
                   {'user': user,
-                   'posts': posts,})
+                   'posts': posts,
+                   'moderator': is_moderator})
 
 
 @require_POST

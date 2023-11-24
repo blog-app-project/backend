@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.core.mail import send_mail
 from django.db.models import Count
@@ -9,6 +9,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from taggit.models import Tag
 
+from account.utils.decorators import staff_not_allowed
+from account.utils.moderate import moderator_permission_codename
+from blog_app.apps import BlogAppConfig
 from blog_app.forms import EmailPostForm, CommentForm, SearchForm, CreatePostForm
 from blog_app.models import Post, RussianTag
 from blog_app.utils.paginator import create_paginator
@@ -65,12 +68,8 @@ def post_list_liked(request):
                                                        'title': "Понравившееся"})
 
 
-def post_detail(request, year, month, day, post):
-    post = get_object_or_404(Post,
-                             slug=post,
-                             publish__year=year,
-                             publish__month=month,
-                             publish__day=day)
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
 
     if post.status != post.Status.PUBLISHED and post.author.id != request.user.id:
         raise Http404()
@@ -176,6 +175,7 @@ def post_comment(request, post_id):
 
 
 @login_required
+@staff_not_allowed
 def post_create(request):
     if request.method == 'POST':
         form = CreatePostForm(data=request.POST)
@@ -230,3 +230,43 @@ def post_publish(request, post_id):
     post.save()
     messages.success(request, 'Пост отправлен на модерацию')
     return redirect(request.user.profile.get_absolute_url())
+
+
+@permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
+def moderation_post_list(request):
+    post_list = Post.moderated.all()
+    posts = create_paginator(post_list, request)
+    return render(request, 'blog_app/moderation/list.html', {'posts': posts,
+                                                             'title': "Модерация"})
+
+
+@permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
+def moderation_post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    comments = post.comments.filter(active=True, moderator=True)
+    form = CommentForm()
+
+    return render(request, 'blog_app/moderation/detail.html', {
+        'post': post,
+        'comments': comments,
+        'form': form
+    })
+
+@require_POST
+@permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
+def moderation_post_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    comment = None  # Хранение комментарного объекта при создании
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        # подход видоизменения объекта до сохранения
+        comment = form.save(commit=False)  # Экземпляр модели создается, но не сохраняется в бд
+        # метод доступен только в ModelForm
+        comment.post = post
+        comment.author = request.user
+        comment.save()
+
+    return render(request, 'blog_app/post/comment.html', {'post': post,
+                                                          'form': form,
+                                                          'comment': comment})
