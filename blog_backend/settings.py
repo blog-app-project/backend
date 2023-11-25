@@ -31,7 +31,7 @@ DEBUG = False
 if DEBUG:
     ALLOWED_HOSTS = ['mysite.com', 'localhost', '127.0.0.1']
 else:
-    ALLOWED_HOSTS = ['render.com']
+    ALLOWED_HOSTS = ['https://blogs-app-ujtt.onrender.com']
 
 # Конфигурация сервера электронной почты
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Теперь все письма будут отсылаться в консоль
