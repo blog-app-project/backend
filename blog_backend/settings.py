@@ -9,8 +9,13 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
+import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()  # loads the configs from .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,20 +23,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a)q7it1_)c+r)tm=*6a95(bd+t7h40=-aqs7e^pk08d%@)q*mq'
+SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 if DEBUG:
     ALLOWED_HOSTS = ['mysite.com', 'localhost', '127.0.0.1']
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Теперь все письма будут отсылаться в консоль
 else:
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ['render.com']
+
+# Конфигурация сервера электронной почты
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Теперь все письма будут отсылаться в консоль
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'alexpanovdev@gmail.com'
+EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_HOST_PASSWORD'))
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 # Application definition
-
 INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'django.contrib.admin',
@@ -81,12 +92,13 @@ WSGI_APPLICATION = 'blog_backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'blog_backend',
-        'USER': 'blog_backend',
-        'PASSWORD': 'dnekcab_golb'
-    }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'blog_backend',
+    #     'USER': 'blog_backend',
+    #     'PASSWORD': 'dnekcab_golb'
+    # }
+    "default": dj_database_url.parse(str(os.getenv('DATABASE_URL')))
 }
 
 # Password validation
