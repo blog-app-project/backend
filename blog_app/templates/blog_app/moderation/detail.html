@@ -23,5 +23,6 @@
     {% empty %}
         <p>Нет комментариев.</p>
     {% endfor %}
-    {% include 'blog_app/post/includes/comment_form.html' %}
+    <a href="{% url 'blog_app:moderation_post_publish' post.id %}" class="button">Одобрить статью 👍</a>
+    {% include 'blog_app/moderation/comment_form.html' %}
 {% endblock %}

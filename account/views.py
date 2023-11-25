@@ -63,6 +63,8 @@ def user_detail(request, username):
         posts = posts.filter(status=Post.Status.PUBLISHED)
     elif request.user.groups.filter(name=moderator_group_name).exists():
         is_moderator = True
+    else:
+        posts = posts.order_by('-updated')
 
 
     posts = create_paginator(posts, request)

@@ -94,25 +94,26 @@ def post_detail(request, post_id):
     })
 
 
+@login_required
 def post_share(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
-    sent = False
     if request.method == 'POST':
         form = EmailPostForm(request.POST)
         if form.is_valid():  # form.errors - список ошибок валидации
             cd = form.cleaned_data  # содержит только валидные поля
             post_url = request.build_absolute_uri(post.get_absolute_url())
-            subject = f"{cd['name']} recommends you read {post.title}"
-            message = f"Read {post.title} at {post_url}\n\n" \
-                      f"{cd['name']}'s comments: {cd['comments']}"
+            name = request.user.username
+            subject = f'{name} рекомендует вам прочитать "{post.title}"'
+            message = f'Читай "{post.title}" по ссылке {post_url}\n\n' \
+                      f"{name} комментирует: {cd['comments']}"
             send_mail(subject, message, 'your_account@gmail.com', [cd['to']])
-            sent = True
+            messages.success(request, f'"{post.title}" успешно отправлен на {cd["to"]}')
+            return redirect(post.get_absolute_url())
     else:
         form = EmailPostForm()
 
     return render(request, 'blog_app/post/share.html', {'post': post,
-                                                        'form': form,
-                                                        'sent': sent})
+                                                        'form': form})
 
 
 @login_required
@@ -168,10 +169,11 @@ def post_comment(request, post_id):
         comment.post = post
         comment.author = request.user
         comment.save()
+        messages.success(request, 'Ваш комментарий оставлен')
+        return redirect(post.get_absolute_url())
 
     return render(request, 'blog_app/post/comment.html', {'post': post,
-                                                          'form': form,
-                                                          'comment': comment})
+                                                          'form': form})
 
 
 @login_required
@@ -234,7 +236,7 @@ def post_publish(request, post_id):
 
 @permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
 def moderation_post_list(request):
-    post_list = Post.moderated.all()
+    post_list = Post.moderated.all().order_by('-updated')
     posts = create_paginator(post_list, request)
     return render(request, 'blog_app/moderation/list.html', {'posts': posts,
                                                              'title': "Модерация"})
@@ -253,10 +255,11 @@ def moderation_post_detail(request, post_id):
         'form': form
     })
 
+
 @require_POST
 @permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
 def moderation_post_comment(request, post_id):
-    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.MODERATED)
     comment = None  # Хранение комментарного объекта при создании
     form = CommentForm(data=request.POST)
     if form.is_valid():
@@ -265,8 +268,27 @@ def moderation_post_comment(request, post_id):
         # метод доступен только в ModelForm
         comment.post = post
         comment.author = request.user
+        comment.moderator = True
         comment.save()
+
+        post.status = Post.Status.DRAFT
+        post.save()
+
+        messages.success(request, 'Пост отправлен на доработку')
+        return redirect('blog_app:moderation')
 
     return render(request, 'blog_app/post/comment.html', {'post': post,
                                                           'form': form,
                                                           'comment': comment})
+
+
+@permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
+def moderation_post_publish(request, post_id):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.MODERATED)
+
+    post.comments.filter(moderator=True).update(active=False)
+    post.status = Post.Status.PUBLISHED
+    post.save()
+
+    messages.success(request, 'Пост отправлен на публикацию')
+    return redirect('blog_app:moderation')

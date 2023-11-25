@@ -13,6 +13,11 @@ class PostAdmin(admin.ModelAdmin):
     date_hierarchy = 'publish'
     ordering = ['-status', '-publish']
 
+    fieldsets = [
+        ("Post info", {"fields": ["title", "slug", "status", "body", "author", "tags"]}),
+        ("Dates", {"fields": ["publish"]}),
+    ]
+
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):

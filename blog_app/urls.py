@@ -26,6 +26,7 @@ urlpatterns = [
     path('moderation/', views.moderation_post_list, name='moderation'),
     path('moderation/<int:post_id>/', views.moderation_post_detail, name='moderation_post'),
     path('moderation/<int:post_id>/comment', views.moderation_post_comment, name='moderation_post_comment'),
+    path('moderation/<int:post_id>/publish', views.moderation_post_publish, name='moderation_post_publish'),
 ]
 
 # slug - строка содержащая только буквы цифры и -, _

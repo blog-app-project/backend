@@ -33,7 +33,7 @@
     </ul>
     <span class="user">
         {% if request.user.is_authenticated %}
-            <a href="{% url "blogs:post_list_liked" %}" {% if section == 'liked' %}class="selected" {% endif %}>♥</a>
+            <a href="{% url "blogs:post_list_liked" %}" {% if section == 'liked' %}class="selected" {% endif %}>🤍</a>
             <a href="{% url "user_detail" request.user.username %}">
                 {{ request.user.profile.blog_name|default:request.user.username }}
             </a>
