@@ -30,4 +30,4 @@ if settings.DEBUG:
     # Раздача медиафайлов с помощью сервера разработки
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 else:
-    urlpatterns += re_path(r'^media/(?P<file_path>.+)+', views.media, name='media')
+    urlpatterns += [re_path(r'^media/(?P<file_path>.+)+', views.media, name='media'),]
