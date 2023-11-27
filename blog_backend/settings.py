@@ -27,6 +27,7 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
+DEBUG_PROPAGATE_EXCEPTIONS = True  # can see logs
 
 ALLOWED_HOSTS = []
 if DEBUG:
@@ -96,15 +97,15 @@ WSGI_APPLICATION = 'blog_backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {}
-if DEBUG:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'blog_backend',
-        'USER': 'blog_backend',
-        'PASSWORD': 'dnekcab_golb'
-    }
-else:
-    DATABASES['default'] = dj_database_url.parse(str(os.getenv('DATABASE_URL')))
+# if DEBUG:
+#     DATABASES['default'] = {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'blog_backend',
+#         'USER': 'blog_backend',
+#         'PASSWORD': 'dnekcab_golb'
+#     }
+# else:
+DATABASES['default'] = dj_database_url.parse(str(os.getenv('DATABASE_URL')))
 
 
 # Password validation
