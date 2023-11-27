@@ -59,17 +59,17 @@ INSTALLED_APPS = [
     'easy_thumbnails',
     'django.contrib.postgres',
 ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
 
 ROOT_URLCONF = 'blog_backend.urls'
 
@@ -95,15 +95,17 @@ WSGI_APPLICATION = 'blog_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': 'blog_backend',
-    #     'USER': 'blog_backend',
-    #     'PASSWORD': 'dnekcab_golb'
-    # }
-    "default": dj_database_url.parse(str(os.getenv('DATABASE_URL')))
-}
+DATABASES = {}
+if DEBUG:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'blog_backend',
+        'USER': 'blog_backend',
+        'PASSWORD': 'dnekcab_golb'
+    }
+else:
+    DATABASES['default'] = dj_database_url.parse(str(os.getenv('DATABASE_URL')))
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -139,7 +141,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-if not DEBUG:    # Tell Django to copy statics to the `staticfiles` directory
+if not DEBUG:  # Tell Django to copy statics to the `staticfiles` directory
     # in your application directory on Render.
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     # Turn on WhiteNoise storage backend that takes care of compressing static files

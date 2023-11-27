@@ -5,5 +5,4 @@
 `gunicorn blog_backend.wsgi:application`
 
 ## TODO
-2. Сделать релиз - ветка релизов, пул реквест и тэг
-3. Задеплоить - SMTP сервер, Django, PostgreSQL
+1. Починить кнопки сайта [прочитав эту статью](https://render.com/docs/deploy-django)
