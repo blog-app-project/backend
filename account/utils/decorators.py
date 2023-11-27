@@ -9,6 +9,7 @@ def staff_not_allowed(function):
     def wrap(request, *args, **kwargs):
         try:
             request.user.profile
+            return function(request, *args, **kwargs)
         except get_user_model().profile.RelatedObjectDoesNotExist:
             raise Http404("Вам не разрешено это действие")
 
