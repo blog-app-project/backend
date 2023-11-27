@@ -10,4 +10,5 @@
         {% csrf_token %}
         <p><input type="submit" value="Сохранить изменения"></p>
     </form>
+    <a class="button" href="{{request.user.profile.get_absolute_url}}">Вернутся в профиль</a>
 {% endblock %}
