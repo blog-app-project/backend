@@ -16,9 +16,9 @@ Including another URLconf
 """
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
-from blog_backend import settings
+from blog_backend import settings, views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +26,8 @@ urlpatterns = [
     path('', include('blog_app.urls', namespace='blogs')),
 ]
 
-# if settings.DEBUG:
-# Раздача медиафайлов с помощью сервера разработки
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    # Раздача медиафайлов с помощью сервера разработки
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    urlpatterns += re_path(r'^media/(?P<file_path>.+)+', views.media, name='media')
