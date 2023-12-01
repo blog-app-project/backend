@@ -3,13 +3,10 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.core.mail import send_mail
 from django.db.models import Count
-from django.forms import model_to_dict
 from django.http import Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from taggit.models import Tag
 
-from account.utils.decorators import staff_not_allowed
 from account.utils.moderate import moderator_permission_codename
 from blog_app.apps import BlogAppConfig
 from blog_app.forms import EmailPostForm, CommentForm, SearchForm, CreatePostForm
@@ -177,7 +174,6 @@ def post_comment(request, post_id):
 
 
 @login_required
-@staff_not_allowed
 def post_create(request):
     if request.method == 'POST':
         form = CreatePostForm(data=request.POST)
@@ -218,7 +214,7 @@ def post_edit(request, post_id):
             new_post.save()
             messages.success(request, 'Пост сохранен')
     else:
-        form = CreatePostForm(data=model_to_dict(post))
+        form = CreatePostForm(instance=post)
     return render(request, 'blog_app/post/edit.html', {'form': form, 'post': post, 'user': request.user})
 
 
@@ -236,7 +232,7 @@ def post_publish(request, post_id):
 
 @permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
 def moderation_post_list(request):
-    post_list = Post.moderated.all().order_by('-updated')
+    post_list = Post.moderated.all().order_by('-updated').exclude(author=request.user)
     posts = create_paginator(post_list, request)
     return render(request, 'blog_app/moderation/list.html', {'posts': posts,
                                                              'title': "Модерация"})
@@ -245,6 +241,9 @@ def moderation_post_list(request):
 @permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
 def moderation_post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+
+    if post.author == request.user:
+        raise Http404("Вам не разрешено это действие")
 
     comments = post.comments.filter(active=True, moderator=True)
     form = CommentForm()
@@ -260,6 +259,8 @@ def moderation_post_detail(request, post_id):
 @permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
 def moderation_post_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.MODERATED)
+    if post.author == request.user:
+        raise Http404("Вам не разрешено это действие")
     comment = None  # Хранение комментарного объекта при создании
     form = CommentForm(data=request.POST)
     if form.is_valid():
@@ -285,6 +286,9 @@ def moderation_post_comment(request, post_id):
 @permission_required(f"{BlogAppConfig.name}.{moderator_permission_codename}", raise_exception=True)
 def moderation_post_publish(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.MODERATED)
+
+    if post.author == request.user:
+        raise Http404("Вам не разрешено это действие")
 
     post.comments.filter(moderator=True).update(active=False)
     post.status = Post.Status.PUBLISHED

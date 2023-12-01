@@ -2,13 +2,12 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from account.forms import UserEditForm, ProfileEditForm, UserRegistrationForm
 from account.models import Profile, Contact
-from account.utils.decorators import staff_not_allowed
 from account.utils.moderate import moderator_group_name
 from blog_app.models import Post
 from blog_app.utils.paginator import create_paginator
@@ -34,7 +33,6 @@ def register(request):
 
 
 @login_required
-@staff_not_allowed
 def edit(request):
     user_profile = request.user.profile
     if request.method == 'POST':

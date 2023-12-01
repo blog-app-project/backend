@@ -26,10 +26,8 @@
     {% endwith %}
     {% if request.user.id == user.id %}
         <a href="{% url 'password_change' %}" class="button">Изменить пароль</a>
-        {% if request.user.profile %}
-            <a href="{% url 'edit' %}" class="button">Изменить профиль</a>
-            <a href="{% url 'blog_app:create' %}" class="button">Новая статья</a>
-        {% endif %}
+        <a href="{% url 'edit' %}" class="button">Изменить профиль</a>
+        <a href="{% url 'blog_app:create' %}" class="button">Новая статья</a>
         {% if moderator %}
             <a href="{% url 'blog_app:moderation' %}" class="button">Перейти в Модерацию</a>
         {% endif %}

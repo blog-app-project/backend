@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
+from account.models import Profile
 from blog_app.models import Post
 
 moderator_group_name = 'moderators'
@@ -33,12 +34,14 @@ def create_moderator(email: str, **kwargs):
     password = kwargs.get('password')
 
     if username is None:
-        moder_id = get_user_model().objects.filter(username__startswith="moderation").count() + 1
-        username = f"moderation{moder_id}"
+        moder_id = get_user_model().objects.filter(username__startswith="moderator").count() + 1
+        username = f"moderator{moder_id}"
     if password is None:
         password = get_user_model().objects.make_random_password()
 
     user = get_user_model().objects.create_user(username=username, email=email, password=password, **kwargs)
+
+    Profile.objects.create(user=user)
 
     moderators_group = Group.objects.get(name=moderator_group_name)
     user.groups.add(moderators_group)

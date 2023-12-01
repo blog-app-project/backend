@@ -7,12 +7,12 @@
 </h2>
 <div class="info">
     {% if personal %}
-        {% show_status post.status %}<br/>
-        <a href="{% url "blog_app:edit" post.id %}">Редактировать</a><br/>
+        <span class="info"><strong>{% show_status post.status %}</strong></span>
+        <a class='button' href="{% url "blog_app:edit" post.id %}">Редактировать</a>
         {% if post.status == "DF" %}
-            <a href="{% url "blog_app:publish" post.id %}">Выложить</a><br/>
+            <a class='button' href="{% url "blog_app:publish" post.id %}">Выложить</a>
         {% endif %}
-        <a href="{% url "blog_app:delete" post.id %}">Удалить</a><br/>
+        <a class='button' href="{% url "blog_app:delete" post.id %}">Удалить</a>
     {% endif %}
     {% if post.tags.all %}
         <p class="tags">Теги:
